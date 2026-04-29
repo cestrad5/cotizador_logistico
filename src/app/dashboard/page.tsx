@@ -161,16 +161,16 @@ export default function DashboardPage() {
     // Client Info
     doc.setDrawColor(200);
     doc.line(10, 70, 200, 70);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('DATOS DEL CLIENTE:', 10, 80);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
     doc.text(`Empresa: ${user.Empresa}`, 10, 87);
     doc.text(`Contacto: ${user.Nombre_contacto}`, 10, 92);
 
     // Quote Paragraph (Simplified as requested)
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('DETALLES DE LA COTIZACIÓN:', 10, 105);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
     
     const textoCotizacion = `El servicio de transporte desde ${origen} hacia ${destino} para un vehículo con capacidad de ${capacidad} y un valor de mercancía declarado en ${formatMoney(valorDeclarado)} tiene un costo total de ${formatMoney(resultado.total)}, sujeto a condiciones normales de transporte y usando la ruta principal entre origen y destino.`;
     
@@ -184,12 +184,12 @@ export default function DashboardPage() {
     doc.setFontSize(12);
     doc.text('VALOR TOTAL DEL SERVICIO:', 105, 153, { align: 'center' });
     doc.setFontSize(20);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text(formatMoney(resultado.total), 105, 163, { align: 'center' });
 
     // Footer
     doc.setFontSize(9);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
     doc.setTextColor(100);
     const footerText = 'Esta cotización es válida por 15 días. No incluye cargues ni descargues adicionales ni tiempos de espera superiores a los pactados.';
     doc.text(footerText, 105, 190, { align: 'center', maxWidth: 180 });
