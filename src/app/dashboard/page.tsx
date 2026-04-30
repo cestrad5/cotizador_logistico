@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchSheetData, GIDS, Cliente, Ruta, parsePercentage, parseCurrency } from '@/lib/googleSheets';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 
 export default function DashboardPage() {
   const [user, setUser] = useState<Cliente | null>(null);

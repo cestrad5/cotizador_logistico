@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchSheetData, GIDS, Cliente, Ruta, parsePercentage, parseCurrency } from '@/lib/googleSheets';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import styles from './chat.module.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
