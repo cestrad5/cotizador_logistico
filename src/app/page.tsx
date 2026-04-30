@@ -45,7 +45,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex-center" style={{ minHeight: '100vh', padding: '1rem' }}>
-      <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '400px' }}>
+      <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '420px' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Maslogistica</h1>
           <p style={{ color: 'var(--text-secondary)' }}>Ingresa tus credenciales para cotizar</p>
@@ -82,12 +82,47 @@ export default function LoginPage() {
             </p>
           )}
 
-          <button type="submit" disabled={loading}>
+          <button type="submit" id="btn-login" disabled={loading}>
             {loading ? 'Verificando...' : 'Iniciar Sesión'}
           </button>
         </form>
 
-        <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+        {/* Chat mode CTA */}
+        <div style={{ marginTop: '1rem' }}>
+          <a
+            id="btn-chat-mode"
+            href="/chat"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              width: '100%',
+              padding: '0.875rem',
+              background: 'rgba(139, 92, 246, 0.12)',
+              border: '1px solid rgba(139, 92, 246, 0.4)',
+              borderRadius: '0.75rem',
+              color: '#a78bfa',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              textDecoration: 'none',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(139, 92, 246, 0.22)';
+              (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(139, 92, 246, 0.12)';
+              (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(0)';
+            }}
+          >
+            💬 Probar versión conversacional
+          </a>
+        </div>
+
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
           &copy; {new Date().getFullYear()} Maslogistica S.A.S - Todos los derechos reservados.
         </div>
       </div>
