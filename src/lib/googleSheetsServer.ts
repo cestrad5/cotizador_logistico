@@ -21,7 +21,7 @@ async function getAuthClient() {
   return auth;
 }
 
-export async function appendQuotation(data: any[]) {
+export async function appendQuotation(data: (string | number | null)[]) {
   try {
     const auth = await getAuthClient();
     const sheets = google.sheets({ version: 'v4', auth });
@@ -59,7 +59,7 @@ export async function appendQuotation(data: any[]) {
     throw error;
   }
 }
-export async function appendConfirmation(data: any[]) {
+export async function appendConfirmation(data: (string | number | null)[]) {
   try {
     const auth = await getAuthClient();
     const sheets = google.sheets({ version: 'v4', auth });

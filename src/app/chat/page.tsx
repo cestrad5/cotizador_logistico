@@ -169,7 +169,8 @@ export default function ChatPage() {
         if (nextStep) setStep(nextStep);
       }, delay);
     },
-    []
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [setStep]
   );
 
   const addUserMessage = useCallback((text: string) => {
@@ -203,6 +204,7 @@ export default function ChatPage() {
     } finally {
       setSaving(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, origen, destino, capacidad]);
 
   const registerConfirmation = useCallback(async (hora: string) => {
@@ -239,6 +241,7 @@ export default function ChatPage() {
     } finally {
       setSaving(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, resultado, origen, destino, capacidad, direccion, direccionEntrega, fechaRecogida, addBotMessage]);
 
   const calcularYMostrar = useCallback(
@@ -295,6 +298,7 @@ export default function ChatPage() {
 
       addBotMessage(resumen, ['✅ Confirmo el servicio', '📄 Descargar PDF', '🏠 Menú'], 'resultado');
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [user, origen, destino, capacidad, rutas, addBotMessage, saveQuotation]
   );
 

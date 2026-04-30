@@ -36,7 +36,7 @@ export default function LoginPage() {
       } else {
         setError('Credenciales incorrectas. Por favor intente de nuevo.');
       }
-    } catch (err) {
+    } catch {
       setError('Error al conectar con el servidor. Intente más tarde.');
     } finally {
       setLoading(false);

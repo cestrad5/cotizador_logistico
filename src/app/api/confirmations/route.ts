@@ -37,10 +37,11 @@ export async function POST(request: Request) {
     await appendConfirmation(row);
 
     return NextResponse.json({ success: true, message: 'Servicio confirmado correctamente' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Confirmation API Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Error al confirmar el servicio';
     return NextResponse.json(
-      { success: false, message: error.message || 'Error al confirmar el servicio' },
+      { success: false, message: errorMessage },
       { status: 500 }
     );
   }

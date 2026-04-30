@@ -32,10 +32,11 @@ export async function POST(request: Request) {
     await appendQuotation(row);
 
     return NextResponse.json({ success: true, message: 'Cotización registrada correctamente' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('API Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Error al registrar la cotización';
     return NextResponse.json(
-      { success: false, message: error.message || 'Error al registrar la cotización' },
+      { success: false, message: errorMessage },
       { status: 500 }
     );
   }
