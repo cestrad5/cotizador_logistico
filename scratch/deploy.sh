@@ -33,7 +33,7 @@ server {
     server_name 157.137.216.208;
 
     location / {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://localhost:3010;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
