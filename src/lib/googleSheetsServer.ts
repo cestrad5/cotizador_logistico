@@ -59,3 +59,45 @@ export async function appendQuotation(data: any[]) {
     throw error;
   }
 }
+export async function appendConfirmation(data: any[]) {
+  try {
+    const auth = await getAuthClient();
+    const sheets = google.sheets({ version: 'v4', auth });
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+
+    // Ensure headers exist for CONFIRMACIONES
+    try {
+      const checkRange = 'CONFIRMACIONES!A1:L1';
+      const check = await sheets.spreadsheets.values.get({ spreadsheetId, range: checkRange });
+      if (!check.data.values || check.data.values.length === 0) {
+        const headers = [
+          'ID Servicio', 'Fecha Registro', 'Empresa', 'Cliente', 
+          'Origen', 'Destino', 'Capacidad', 'Total', 
+          'Direccion Recogida', 'Direccion Entrega', 'Fecha Recogida', 'Hora Recogida'
+        ];
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: checkRange,
+          valueInputOption: 'USER_ENTERED',
+          requestBody: { values: [headers] }
+        });
+      }
+    } catch (e) {
+      console.warn('Could not initialize headers for CONFIRMACIONES:', e);
+    }
+
+    const response = await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: 'CONFIRMACIONES!A:L',
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [data],
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error appending confirmation to Google Sheets:', error);
+    throw error;
+  }
+}

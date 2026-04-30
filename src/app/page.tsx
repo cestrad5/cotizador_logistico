@@ -99,10 +99,10 @@ export default function LoginPage() {
               gap: '0.5rem',
               width: '100%',
               padding: '0.875rem',
-              background: 'rgba(139, 92, 246, 0.12)',
-              border: '1px solid rgba(139, 92, 246, 0.4)',
+              background: 'rgba(140, 198, 63, 0.12)',
+              border: '1px solid rgba(140, 198, 63, 0.4)',
               borderRadius: '0.75rem',
-              color: '#a78bfa',
+              color: '#7bb535',
               fontWeight: 600,
               fontSize: '0.9rem',
               textDecoration: 'none',
@@ -110,11 +110,11 @@ export default function LoginPage() {
               cursor: 'pointer',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(139, 92, 246, 0.22)';
+              (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(140, 198, 63, 0.22)';
               (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-2px)';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(139, 92, 246, 0.12)';
+              (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(140, 198, 63, 0.12)';
               (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(0)';
             }}
           >

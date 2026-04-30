@@ -167,35 +167,57 @@ export default function DashboardPage() {
     doc.text(`Empresa: ${user.Empresa}`, 10, 87);
     doc.text(`Contacto: ${user.Nombre_contacto}`, 10, 92);
 
-    // Quote Paragraph (Simplified as requested)
+    // Quote Paragraph
     doc.setFont('helvetica', 'bold');
     doc.text('DETALLES DE LA COTIZACIÓN:', 10, 105);
     doc.setFont('helvetica', 'normal');
     
-    const textoCotizacion = `El servicio de transporte desde ${origen} hacia ${destino} para un vehículo con capacidad de ${capacidad} y un valor de mercancía declarado en ${formatMoney(valorDeclarado)} tiene un costo total de ${formatMoney(resultado.total)}, sujeto a condiciones normales de transporte y usando la ruta principal entre origen y destino.`;
+    const textoCotizacion = `El servicio de transporte desde ${origen} hacia ${destino} para un vehículo con capacidad de ${capacidad} y un valor de mercancía declarado en ${formatMoney(valorDeclarado)} tiene un costo total de ${formatMoney(resultado.total)}, sujeto a condiciones normales de transporte.`;
     
     doc.setFontSize(11);
     doc.text(textoCotizacion, 10, 115, { maxWidth: 190, lineHeightFactor: 1.5 });
 
     // Total Highlight
-    doc.setFillColor(59, 130, 246);
-    doc.rect(10, 145, 190, 25, 'F');
+    doc.setFillColor(140, 198, 63); // Brand Green
+    doc.rect(10, 140, 190, 20, 'F');
     doc.setTextColor(255);
-    doc.setFontSize(12);
-    doc.text('VALOR TOTAL DEL SERVICIO:', 105, 153, { align: 'center' });
-    doc.setFontSize(20);
+    doc.setFontSize(11);
+    doc.text('VALOR TOTAL DEL SERVICIO:', 105, 147, { align: 'center' });
+    doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text(formatMoney(resultado.total), 105, 163, { align: 'center' });
+    doc.text(formatMoney(resultado.total), 105, 155, { align: 'center' });
+
+    // Insurance and Legal Text
+    doc.setTextColor(0);
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'normal');
+    
+    const legalText = "MASLOGISTICA tiene contratado un seguro que ampara sus obligaciones derivadas del contrato de transporte conforme los parámetros del código de comercio. Igualmente, nuestro usuario se compromete a contar con una póliza de mercancías para asegurar los riesgos y pérdidas de las mercancías objeto de las operaciones de transporte, por consiguiente, en caso de ocurrir algún siniestro durante el traslado de la mercancía, ustedes como nuestros clientes efectuarán el cobro de las pérdidas a su compañía de seguros y MASLOGISTICA atenderá la indemnización vía acción de subrogación por parte de su compañía aseguradora. MASLOGISTICA, se compromete a suministrar toda la información que esté bajo su control y que sea requerida por el cliente para ser presentada ante su aseguradora. Lo anterior por cuanto las condiciones de negociación y en especial el flete pactado tiene como aspecto fundamental este modelo indemnizatorio el cual es entendido y aceptado por el usuario.";
+    
+    doc.text('NOTAS IMPORTANTES Y SEGUROS:', 10, 170);
+    doc.setFontSize(7.5);
+    doc.text(legalText, 10, 175, { maxWidth: 190, textAlign: 'justify', lineHeightFactor: 1.3 });
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Seguro Opcional:', 10, 205);
+    doc.setFont('helvetica', 'normal');
+    doc.text('En caso de no disponer de póliza para el transporte de sus mercancías, podemos suministrarle una con tasa del 0.3% del valor declarado.', 35, 205);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('STAND BY:', 10, 215);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Se consideran Stand By los tiempos adicionales a los tiempos libres, por causas imputables al cliente en proceso de Cargue, Descargue, aduanales, documentales. El costo dependerá de las situaciones de mercado.', 28, 215, { maxWidth: 172 });
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('ANEXOS A LA VIGENCIA:', 10, 228);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Esta oferta se mantendrá vigente siempre y cuando las condiciones de fletes en el mercado así lo permitan. Es importante clarificar, que si se presentan condiciones que inciden en las operaciones, las tarifas serán revisadas y notificadas al cliente.', 48, 228, { maxWidth: 152 });
 
     // Footer
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
     doc.setTextColor(100);
-    const footerText = 'Esta cotización es válida por 15 días. No incluye cargues ni descargues adicionales ni tiempos de espera superiores a los pactados.';
-    doc.text(footerText, 105, 190, { align: 'center', maxWidth: 180 });
-    
-    doc.text('Contacto: +57 317 353 4465 | comercial@maslogistica.com.co', 105, 200, { align: 'center' });
-    doc.text('Cl. 37b #42 – 342, La Independencia, Itagüi, Antioquia', 105, 205, { align: 'center' });
+    doc.text('Contacto: +57 317 353 4465 | comercial@maslogistica.com.co', 105, 260, { align: 'center' });
+    doc.text('Cl. 37b #42 – 342, La Independencia, Itagüi, Antioquia', 105, 265, { align: 'center' });
 
     doc.save(`Cotizacion_${resultado.idCotizacion}.pdf`);
   };
@@ -287,7 +309,7 @@ export default function DashboardPage() {
               
               <div style={{ 
                 marginTop: 'auto', 
-                background: 'rgba(59, 130, 246, 0.1)', 
+                background: 'rgba(140, 198, 63, 0.1)', 
                 padding: '1.5rem', 
                 borderRadius: '1rem', 
                 border: '1px solid var(--accent-primary)',
