@@ -30,6 +30,7 @@ interface Message {
   role: MessageRole;
   text: string;
   options?: string[];
+  type?: 'normal' | 'success' | 'error';
   isTyping?: boolean;
   timestamp: Date;
 }
@@ -84,6 +85,7 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savingType, setSavingType] = useState<'cotizacion' | 'confirmacion' | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -153,7 +155,7 @@ export default function ChatPage() {
   // ─── Message helpers ─────────────────────────────────────────────────────────
 
   const addBotMessage = useCallback(
-    (text: string, options?: string[], nextStep?: ChatStep) => {
+    (text: string, options?: string[], nextStep?: ChatStep, type: 'normal' | 'success' | 'error' = 'normal') => {
       const id = uid();
       setIsTyping(true);
 
@@ -164,7 +166,7 @@ export default function ChatPage() {
         setIsTyping(false);
         setMessages((prev) => [
           ...prev,
-          { id, role: 'bot', text, options, timestamp: new Date() },
+          { id, role: 'bot', text, options, type, timestamp: new Date() },
         ]);
         if (nextStep) setStep(nextStep);
       }, delay);
@@ -182,6 +184,7 @@ export default function ChatPage() {
 
   const saveQuotation = useCallback(async (res: QuoteResult, valDeclarado: number) => {
     if (!user) return;
+    setSavingType('cotizacion');
     setSaving(true);
     try {
       await fetch('/api/quotations', {
@@ -209,6 +212,7 @@ export default function ChatPage() {
 
   const registerConfirmation = useCallback(async (hora: string) => {
     if (!user || !resultado) return;
+    setSavingType('confirmacion');
     setSaving(true);
     try {
       await fetch('/api/confirmations', {
@@ -233,7 +237,8 @@ export default function ChatPage() {
       addBotMessage(
         `¡Confirmado! 🎉 Hemos registrado tu solicitud de transporte con el ID **${resultado.idCotizacion}**.\n\nUn asesor se pondrá en contacto contigo a la brevedad para finalizar los detalles.\n\n¿Deseas algo más?`,
         ['🏠 Menú', '🚪 Cerrar Sesión'],
-        'menu'
+        'done',
+        'success'
       );
     } catch (err) {
       console.error('Error registering confirmation:', err);
@@ -256,6 +261,13 @@ export default function ChatPage() {
 
       const valorBaseStr = rutaEncontrada[capacidad];
       const valorBase = parseCurrency(valorBaseStr);
+      
+      // Sprint 1 Task 5: Guard against NaN or invalid tariffs
+      if (isNaN(valorBase) || valorBase <= 0) {
+        addBotMessage('⚠️ Lo sentimos, ha ocurrido un error al procesar la tarifa de esta ruta. Por favor contacta a un asesor.');
+        return;
+      }
+
       const costoSeguro = valDeclarado * 0.01;
       const subtotal = valorBase + costoSeguro;
       const porcentajeDescuento = parsePercentage(user['%Descuento']);
@@ -301,6 +313,25 @@ export default function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [user, origen, destino, capacidad, rutas, addBotMessage, saveQuotation]
   );
+
+  const getProgress = () => {
+    const steps: ChatStep[] = ['origen', 'destino', 'capacidad', 'valor_declarado', 'direccion', 'direccion_entrega', 'fecha_recogida', 'hora_recogida'];
+    const currentIdx = steps.indexOf(step);
+    if (currentIdx === -1) return null;
+    return {
+      current: currentIdx + 1,
+      total: steps.length,
+      label: 
+        step === 'origen' ? 'Origen' :
+        step === 'destino' ? 'Destino' :
+        step === 'capacidad' ? 'Vehículo' :
+        step === 'valor_declarado' ? 'Valor' :
+        step === 'direccion' ? 'Recogida' :
+        step === 'direccion_entrega' ? 'Entrega' :
+        step === 'fecha_recogida' ? 'Fecha' :
+        'Hora'
+    };
+  };
 
   // ─── Event handlers ───────────────────────────────────────────────────────────
 
@@ -362,19 +393,50 @@ export default function ChatPage() {
 
       case 'resultado':
         if (option.includes('Confirmo el servicio')) {
-          setStep('direccion');
+          setStep('confirm_service');
           addBotMessage(
-            '¡Excelente decisión! 🚀 Vamos a coordinar la recogida.\n\n¿Cuál es la **dirección exacta** del lugar de recogida?',
-            undefined,
-            'direccion'
+            'Has seleccionado confirmar el servicio. 🚛\n\n¿Estás seguro de que deseas proceder con el registro de la solicitud de transporte?',
+            ['👍 Sí, proceder', '❌ Cancelar'],
+            'confirm_service'
           );
-          setTimeout(() => inputRef.current?.focus(), 300);
         } else if (option.includes('Menú')) {
           addBotMessage(
             '¿Qué deseas hacer ahora?',
             ['🚚 Nueva Cotización', '🚪 Cerrar Sesión'],
             'menu'
           );
+        }
+        break;
+
+      case 'confirm_service':
+        if (option.includes('proceder')) {
+          setStep('direccion');
+          addBotMessage(
+            '¡Excelente decisión! 🚀 Vamos a coordinar la recogida.\n\n¿Cuál es la **dirección exacta** del lugar de recogida?',
+            ['❌ Cancelar proceso'],
+            'direccion'
+          );
+          setTimeout(() => inputRef.current?.focus(), 300);
+        } else {
+          addBotMessage(
+            'Entendido. He cancelado el proceso de confirmación. ¿Qué deseas hacer ahora?',
+            ['🚚 Nueva Cotización', '🏠 Menú'],
+            'menu'
+          );
+        }
+        break;
+
+      case 'direccion':
+      case 'direccion_entrega':
+      case 'fecha_recogida':
+      case 'hora_recogida':
+        if (option.includes('Cancelar')) {
+          addBotMessage(
+            'Proceso de confirmación cancelado. ¿Deseas volver al menú?',
+            ['🏠 Menú', '📄 Ver cotización anterior'],
+            'resultado'
+          );
+          return;
         }
         break;
     }
@@ -448,9 +510,14 @@ export default function ChatPage() {
 
       case 'valor_declarado': {
         const num = parseFloat(value.replace(/[^0-9.]/g, ''));
-        if (isNaN(num) || num < 0) {
+        if (isNaN(num) || num < 50000) {
           addUserMessage(value);
-          addBotMessage('⚠️ Por favor ingresa un número válido mayor o igual a 0.');
+          addBotMessage('⚠️ El valor declarado debe ser un número válido mayor a $50.000 COP.');
+          return;
+        }
+        if (num > 500000000) {
+          addUserMessage(value);
+          addBotMessage('⚠️ El valor declarado excede el límite de cobertura automática ($500.000.000). Por favor contacta a un asesor.');
           return;
         }
         addUserMessage(formatMoney(num));
@@ -460,6 +527,11 @@ export default function ChatPage() {
       }
 
       case 'direccion': {
+        if (value.length < 10) {
+          addUserMessage(value);
+          addBotMessage('⚠️ Por favor ingresa una dirección más detallada (mínimo 10 caracteres).');
+          return;
+        }
         addUserMessage(value);
         setDireccion(value);
         addBotMessage(
@@ -471,6 +543,11 @@ export default function ChatPage() {
       }
 
       case 'direccion_entrega': {
+        if (value.length < 10) {
+          addUserMessage(value);
+          addBotMessage('⚠️ Por favor ingresa una dirección de entrega más detallada.');
+          return;
+        }
         addUserMessage(value);
         setDireccionEntrega(value);
         addBotMessage(
@@ -484,6 +561,14 @@ export default function ChatPage() {
       case 'fecha_recogida': {
         addUserMessage(value);
         setFechaRecogida(value);
+        
+        // Sprint 1 Task 1: Basic date validation (already restricted by 'min' in input, but as backup)
+        const today = new Date().toISOString().split('T')[0];
+        if (value < today) {
+          addBotMessage('⚠️ La fecha de recogida no puede ser anterior a hoy. Por favor selecciona una fecha válida.');
+          return;
+        }
+
         addBotMessage(
           'Fecha programada. ✅\n\n¿A qué **hora** deberíamos pasar por la mercancía?',
           undefined,
@@ -495,6 +580,16 @@ export default function ChatPage() {
       case 'hora_recogida': {
         addUserMessage(value);
         setHoraRecogida(value);
+        
+        // Sprint 1 Task 2: Cross validation Date + Time
+        const now = new Date();
+        const selectedDateTime = new Date(`${fechaRecogida}T${value}`);
+        
+        if (selectedDateTime <= now) {
+          addBotMessage('⚠️ La hora seleccionada ya pasó para el día de hoy. Por favor indica una hora posterior.');
+          return;
+        }
+
         registerConfirmation(value);
         break;
       }
@@ -670,6 +765,21 @@ export default function ChatPage() {
             <span className={styles.headerUserCompany}>{user.Empresa}</span>
           </div>
         )}
+        
+        {/* Sprint 3 Task 1: Progress indicator */}
+        {getProgress() && (
+          <div className={styles.progressIndicator}>
+            <div className={styles.progressTrack}>
+              <div 
+                className={styles.progressFill} 
+                style={{ width: `${(getProgress()!.current / getProgress()!.total) * 100}%` }} 
+              />
+            </div>
+            <span className={styles.progressText}>
+              {getProgress()?.label} — {getProgress()?.current}/{getProgress()?.total}
+            </span>
+          </div>
+        )}
       </header>
 
       {/* Messages */}
@@ -686,25 +796,40 @@ export default function ChatPage() {
         {messages.map((msg) => (
           <div key={msg.id} className={`${styles.messageGroup} ${msg.role === 'user' ? styles.userGroup : styles.botGroup}`}>
             {msg.role === 'bot' && (
-              <div className={styles.botAvatar}>🤖</div>
+              <div className={styles.botAvatar}>🚛</div>
             )}
             <div className={styles.messageContent}>
-              <div className={`${styles.bubble} ${msg.role === 'user' ? styles.userBubble : styles.botBubble}`}>
+              <div className={`${styles.bubble} ${
+                msg.role === 'user' 
+                  ? styles.userBubble 
+                  : msg.type === 'success' 
+                    ? styles.successBubble 
+                    : styles.botBubble
+              }`}>
                 {renderText(msg.text)}
               </div>
 
               {/* Option buttons */}
               {msg.options && msg.role === 'bot' && (
                 <div className={styles.optionButtons}>
-                  {msg.options.map((opt) => (
-                    <button
-                      key={opt}
-                      className={styles.optionBtn}
-                      onClick={() => handleOptionAction(opt)}
-                    >
-                      {opt}
-                    </button>
-                  ))}
+                  {msg.options.map((opt) => {
+                    const isLastBotMessage = 
+                      msg.role === 'bot' && 
+                      msg.id === [...messages].reverse().find(m => m.role === 'bot')?.id;
+                    
+                    return (
+                      <button
+                        key={opt}
+                        className={`${styles.optionBtn} ${
+                          messages.find(m => m.role === 'user' && m.text === opt) ? styles.selectedOption : ''
+                        }`}
+                        onClick={() => handleOptionAction(opt)}
+                        disabled={!isLastBotMessage || isTyping || saving}
+                      >
+                        {opt}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -714,7 +839,7 @@ export default function ChatPage() {
         {/* Typing indicator */}
         {isTyping && (
           <div className={`${styles.messageGroup} ${styles.botGroup}`}>
-            <div className={styles.botAvatar}>🤖</div>
+            <div className={styles.botAvatar}>🚛</div>
             <div className={styles.typingBubble}>
               <span /><span /><span />
             </div>
@@ -725,20 +850,24 @@ export default function ChatPage() {
       </div>
 
       {/* Input area */}
-      <form className={styles.chatInput} onSubmit={handleSubmit}>
+      <form 
+        className={styles.chatInput} 
+        onSubmit={handleSubmit}
+        style={{ display: showInput ? 'flex' : 'none' }}
+      >
         <input
           ref={inputRef}
           type={inputType}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder={showInput ? inputPlaceholder : 'Selecciona una opción arriba…'}
-          disabled={!showInput || isTyping}
+          disabled={!showInput || isTyping || saving}
           className={styles.textInput}
-          min={step === 'valor_declarado' ? '0' : undefined}
+          min={step === 'fecha_recogida' ? new Date().toISOString().split('T')[0] : undefined}
         />
         <button
           type="submit"
-          disabled={!showInput || !inputValue.trim() || isTyping}
+          disabled={!showInput || !inputValue.trim() || isTyping || saving}
           className={styles.sendBtn}
           aria-label="Enviar"
         >
@@ -751,7 +880,7 @@ export default function ChatPage() {
 
       {saving && (
         <div className={styles.savingBar}>
-          Guardando cotización en Google Sheets…
+          {savingType === 'cotizacion' ? 'Guardando cotización en Google Sheets…' : 'Registrando solicitud de servicio…'}
         </div>
       )}
     </div>

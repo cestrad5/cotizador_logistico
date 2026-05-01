@@ -19,6 +19,14 @@ export async function POST(request: Request) {
       horaRecogida
     } = body;
 
+    // Sprint 1 Task 4: Backend validation
+    if (!idServicio || !direccion || !direccionEntrega || !fechaRecogida || !horaRecogida) {
+      return NextResponse.json(
+        { success: false, message: 'Faltan campos requeridos para la confirmación' },
+        { status: 400 }
+      );
+    }
+
     const row = [
       idServicio,
       fechaRegistro,
